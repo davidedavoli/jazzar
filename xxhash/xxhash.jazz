@@ -1,0 +1,2 @@
+require "xxh3.jazz"
+require "xxhash64.jazz"

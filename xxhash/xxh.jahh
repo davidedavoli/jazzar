@@ -1,0 +1,30 @@
+u64 prime64_1 = 0x9E3779B185EBCA87;
+u64 prime64_2 = 0xC2B2AE3D27D4EB4F;
+u64 prime64_3 = 0x165667B19E3779F9;
+u64 prime64_4 = 0x85EBCA77C2B2AE63;
+u64 prime64_5 = 0x27D4EB2F165667C5;
+
+inline
+fn rol(reg u64 x, inline int c) -> reg u64 {
+   ?{}, x = #ROL(x, c);
+   return x;
+}
+
+inline
+fn avalanche(reg u64 hash) -> reg u64 {
+  reg u64 tmp;
+
+  tmp = hash;
+  tmp >>= 33;
+  hash ^= tmp;
+  hash *= prime64_2;
+  tmp = hash;
+  tmp >>= 29;
+  hash ^= tmp;
+  hash *= prime64_3;
+  tmp = hash;
+  tmp >>= 32;
+  hash ^= tmp;
+
+  return hash;
+}
