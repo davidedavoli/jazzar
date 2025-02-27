@@ -1,0 +1,29 @@
+export fn is_isogram(reg u64 string) -> reg u8 {
+  reg u64 result state;
+  ?{}, result = #set0();
+  ?{}, state = #set0();
+  reg u8 b;
+  reg bool done;
+  while {
+    b = (u8)[string];
+    ?{ "==" = done } = #TEST_8(b, b);
+  } (!done) {
+    b &= 0xdf; // force upper-case
+    b -= 0x41;
+    if b <u 26 {
+      reg bool seen;
+      reg u64 bit mask;
+      bit = (64u)b;
+      seen = #BT(state, bit);
+      _, result += 0 + seen;
+      ?{}, mask = #set0();
+      mask += 1;
+      mask <<= bit & 63;
+      state |= mask;
+    }
+    string += 1;
+  }
+  ?{ "==" = done }, result = #AND(result, result);
+  b = #SETcc(done);
+  return b;
+}

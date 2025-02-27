@@ -1,0 +1,28 @@
+/* Hamming distance between two zero-terminated strings of equal length.
+   Returns -1 if the lengths differ.
+*/
+export
+fn distance(reg u64 x y) -> reg u64 {
+  reg u64 i count inc;
+  ?{}, count = #set0();
+  i = count;
+  reg bool test;
+  reg u8 a b c d;
+  while {
+    a = (u8)[x + i];
+    b = (u8)[y + i];
+    ?{ "!=" = test} = #TEST_8(a, a);
+    c = #SETcc(test);
+    test = b != 0;
+    d = #SETcc(test);
+    c &= d;
+  } (c != 0) {
+    test = a != b;
+    c = #SETcc(test);
+    inc = (64u)c;
+    count += inc;
+    i += 1;
+  }
+  if a != b { count = -1; }
+  return count;
+}

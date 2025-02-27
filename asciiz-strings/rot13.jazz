@@ -1,0 +1,64 @@
+inline fn reduce26(reg u8 x) -> reg u8 {
+  if x > 26 {
+    x -= 26;
+  }
+  return x;
+}
+
+/* Rotates the ASCII-encoded letter in b by the amount in c */
+inline
+fn byte(reg u8 b, reg u8 c) -> reg u8 {
+  if b > 0x40 {
+    if b < 0x5b {
+      b += c;
+      b -= 0x40;
+      b = reduce26(b);
+      b += 0x40;
+    } else if b > 0x60 {
+      if b < 0x7b {
+        b += c;
+        b -= 0x60;
+        b = reduce26(b);
+        b += 0x60;
+      }
+    }
+  }
+  return b;
+}
+
+/* In-place transformation of a string of known length
+*/
+inline
+fn encrypt(reg u64 begin len, reg u8 k) {
+  reg u64 i;
+  i = 0;
+  while (i < len) {
+    reg u8 b;
+    b = (u8)[begin + i];
+    b = byte(b, k);
+    (u8)[begin + i] = b;
+    i += 1;
+  }
+}
+
+export
+fn rot13(reg u64 io len, reg u8 key) {
+  encrypt(io, len, key);
+}
+
+/* Out-of-place interface for zero-terminated strings
+*/
+export
+fn rotate(reg u64 in, reg u32 shift_key, reg u64 out) {
+  reg u8 b key;
+  key = shift_key;
+  while {
+    b = (u8)[in];
+  } (b != 0) {
+    b = byte(b, key);
+    (u8)[out] = b;
+    in += 1;
+    out += 1;
+  }
+  (u8)[out] = b;
+}
