@@ -16,7 +16,7 @@ fn add(reg ptr u32[17] h c) -> reg ptr u32[17] {
 
 u32[17] minusp = { 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 252 };
 
-fn freeze(reg ptr u32[17] h) -> reg u32[17] {
+fn freeze(reg ptr u32[17] h) -> reg ptr u32[17] {
   stack u32[17] horig;
   reg u32 tmp negative;
   inline int j;
