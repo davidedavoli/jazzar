@@ -115,6 +115,8 @@ fn poly1305_ref(reg u32 out in inlen k) -> reg u32 {
 
   // Read & clamp the key
 
+  () = #fence();
+
   for j = 0 to 16 {
     tmp = (32u)(u8)[k + j];
     if j % 4 == 3 {
