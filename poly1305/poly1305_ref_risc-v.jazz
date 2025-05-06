@@ -113,6 +113,11 @@ fn poly1305_ref(reg u32 out in inlen k) -> reg u32 {
   reg u32 tmp;
   inline int j;
 
+  k = #dfence(k);
+  inlen = #dfence(inlen);
+  in = #dfence(in);
+  out = #dfence(out);
+  
   // Read & clamp the key
 
   for j = 0 to 16 {
