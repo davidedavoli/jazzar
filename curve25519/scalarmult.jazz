@@ -43,11 +43,12 @@ fn add(reg ptr u32[32] out a b) -> reg ptr u32[32] {
 
 fn sub(reg ptr u32[32] out a b) -> reg ptr u32[32] {
   inline int j;
-  reg u32 u v w;
+  reg u32 u v w c;
+  c = 65280;
   u = 218;
   for j = 0 to 31 {
     v = a[j];
-    v += 65280;
+    v += c;
     w = b[j];
     v -= w;
     u += v;
@@ -79,9 +80,11 @@ fn squeeze_aux(reg ptr u32[32] a, reg u32 u) -> reg ptr u32[32], reg u32 {
 
 inline
 fn mul19(reg u32 u) -> reg u32 {
-  reg u32 t;
-  t = u + (u << 3);
-  u += t << 1;
+  reg u32 t u3 t1;
+  u3 = u << 3;
+  t = u + u3;
+  t1 = t << 1;
+  u += t1;
   return u;
 }
 
@@ -134,20 +137,22 @@ fn freeze(reg ptr u32[32] a) -> reg ptr u32[32] {
 inline
 fn mul38_acc(reg u32 acc x) -> reg u32 {
   x = mul19(x);
-  acc += x << 1;
+  x = x << 1;
+  acc += x;
   return acc;
 }
 
 fn mult(reg ptr u32[32] out a b) -> reg ptr u32[32] {
   inline int i j;
   for i = 0 to 32 {
-    reg u32 u;
+    reg u32 u, xy;
     u = 0;
     for j = 0 to i + 1 {
       reg u32 x y;
       x = a[j];
       y = b[i - j];
-      u += x * y;
+      xy = x * y;
+      u += xy;
     }
     for j = i + 1 to 32 {
       reg u32 x y;
@@ -164,21 +169,21 @@ fn mult(reg ptr u32[32] out a b) -> reg ptr u32[32] {
 
 fn mult121665(reg ptr u32[32] out a) -> reg ptr u32[32] {
   inline int j;
-  reg u32 u t k;
+  reg u32 u t k kt;
   u = 0;
   for j = 0 to 31 {
     t = a[j];
-    k = 0xdb41;
-    k = #MOVT(k, 1);
-    u += k * t;
+    k = 121665; 
+    kt = k * t;
+    u += kt;
     t = u & 0xff;
     out[j] = t;
     u >>= 8;
   }
   t = a[31];
-  k = 0xdb41;
-  k = #MOVT(k, 1);
-  u += k * t;
+  k = 121665; 
+  kt = k * t;
+  u += kt;
   t = u & 127;
   out[31] = t;
   u >>= 7;
@@ -196,10 +201,11 @@ fn square(reg ptr u32[32] out a) -> reg ptr u32[32] {
   for i = 0 to 32 {
     u = 0;
     for j = 0 to (i + 1) / 2 {
-      reg u32 x y;
+      reg u32 x y xy;
       x = a[j];
       y = a[i - j];
-      u += x * y;
+      xy = x * y;
+      u += xy;
     }
     for j = i + 1 to (i + 33) / 2 {
       reg u32 x y;
@@ -210,9 +216,10 @@ fn square(reg ptr u32[32] out a) -> reg ptr u32[32] {
     }
     u <<= 1;
     if (i & 1) == 0 {
-      reg u32 x;
+      reg u32 x xx;
       x = a[i / 2];
-      u += x * x;
+      xx = x * x;
+      u += xx;
       x = a[i / 2 + 16];
       x *= x;
       u = mul38_acc(u, x);
@@ -229,15 +236,28 @@ fn square(reg ptr u32[32] out a) -> reg ptr u32[32] {
 */
 fn select(reg ptr u32[64] p q r s, reg u32 cond) -> reg ptr u32[64], reg ptr u32[64] {
   inline int j;
-  reg bool f;
-  f = cond != 0;
+  reg u32 f nf af bf cf;
+  // f = cond != 0 
+  nf = #SLTIU(cond, 1); // nf = if cond = 0 then 1 else 0
+  nf = -nf;             // nf = if cond = 0 then -1 else 0
+  f = !nf;              // f = if cond = 0 then 0 else -1
+                        // f = if cond != 0 then -1 else 0
+
   for j = 0 to 64 {
     reg u32 a b c;
     a = r[j];
     b = s[j];
     c = a;
-    a = b if f;
-    b = c if f;
+    // a = b if f;
+    // a = a & nf ^ b & f;
+    af = a & nf;
+    bf = b & f; 
+    a = af ^ bf;
+    // b = c if f;
+    // b = b & nf + c & f;
+    bf = b & nf;
+    cf = c & f;
+    b = bf ^ cf;
     p[j] = a;
     q[j] = b;
   }
@@ -274,7 +294,7 @@ fn mainloop(reg ptr u32[64] work, reg ptr u8[32] e) -> reg ptr u32[64] {
     tmp = pos >> 3;
     cond = (32u)e[(int) tmp];
     tmp = pos & 7;
-    cond >>= tmp;
+    cond >>= (pos & 31);
     cond &= 1;
     xzmb, xzm1b = select(xzmb, xzm1b, xzm, xzm1, cond);
     a0[0:32] = add(a0[0:32], xzmb[0:32], xzmb[32:32]);
