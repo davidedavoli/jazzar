@@ -1,0 +1,12 @@
+inline fn __ror(reg u32 x, reg u32 r) -> reg u32
+{
+  reg u32 a b tmp;
+  tmp = 32;
+
+  a = #SRL(x, r);
+  tmp = tmp - r;
+  b = #SLL(x, tmp);
+  a |= b;
+
+  return a;
+}
