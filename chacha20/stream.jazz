@@ -1,7 +1,7 @@
 param int CHACHA_ROUNDS=20;
 
 // from Jade require "crypto_stream/chacha/common/armv7m/ref/chacha.jinc"
-require "../../../common/risc-v/ref/chacha.jinc"
+require "chacha.jinc"
 
 
 // TODO: nonce_key -> nonce, key when support from jasminc > 4 args
@@ -14,7 +14,6 @@ export fn jade_stream_chacha_chacha20_risc_v_ref_xor_temporary(reg u32 output in
   output = #dfence(output);
   input = #dfence(input);
   input_length = #dfence(input_length);
-  nonce = #dfence(nonce);
 
   nonce = nonce_key[0];
   key   = nonce_key[1];
